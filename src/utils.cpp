@@ -2,6 +2,8 @@
 #include <string>
 #include <fstream>
 #include "../include/constants.h"
+#include "../include/structs.h"
+#include "../include/utils.h"
 
 using namespace std;
 
@@ -498,4 +500,86 @@ double calculateTotalFatsFromMeals(const string& mealsFile) {
 
     inFile.close();
     return totalFats;
+}
+
+void clearInputBuffer() {
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+}
+
+// TODO: outputs "Invalid goal."
+void updateUserInfo(User& user) {
+    double newWeight;
+    string newGoal;
+
+    cout << "Current weight: " << user.weight << " kg. Enter new weight: ";
+    while (true) {
+        if (cin >> newWeight && isWeightValid(newWeight)) {
+            user.weight = newWeight;
+            break;
+        } else {
+            cout << "Invalid weight. Please enter a value between " << WEIGHT_MIN << " and " << WEIGHT_MAX << ": ";
+            cin.clear();
+            clearInputBuffer();
+        }
+    }
+
+    cout << "Current goal: " << user.goal << ". Enter new goal (weight loss/weight maintenance/weight gain): ";
+    while (true) {
+        cin >> newGoal;
+        toLowerCase(newGoal);
+
+        if (isGoalValid(newGoal)) {
+            user.goal = newGoal;
+            break;
+        } else {
+            cout << "Invalid goal. Please enter one of the following: weight loss, weight maintenance, or weight gain: ";
+            clearInputBuffer();
+        }
+
+    double maintenanceCalories = calculateMaintenanceCalories(user.gender, user.weight, user.height, user.age, user.levelOfActivity);
+    user.recommendedMacros.calories = maintenanceCalories;
+    user.recommendedMacros.protein = calculateProtein(maintenanceCalories, user.goal);
+    user.recommendedMacros.carbohydrates = calculateCarbs(maintenanceCalories, user.goal);
+    user.recommendedMacros.fats = calculateFats(maintenanceCalories, user.goal);
+    }
+}
+
+void displayUpdatedInfo(const User& user) {
+    cout << "Updated information:\n";
+    cout << "New weight: " << user.weight << " kg\n";
+    cout << "Goal: " << user.goal << "\n";
+    cout << "Recommended Calories: " << user.recommendedMacros.calories << " kcal\n";
+}
+
+long long findUserPosition(fstream& file, const string& username) {
+    string line;
+    long long posToModify = -1;
+    while (getline(file, line)) {
+        size_t firstComma = line.find(',');
+        string currentUsername = line.substr(0, firstComma);
+        if (currentUsername == username) {
+            posToModify = file.tellg();
+            break;
+        }
+    }
+    return posToModify;
+}
+
+void updateUserInFile(fstream& file, const User& user, long long posToModify) {
+    file.seekp(posToModify);
+
+    file << user.username << ","
+         << user.password << ","
+         << user.age << ","
+         << user.gender << ","
+         << user.height << ","
+         << user.weight << ","
+         << user.levelOfActivity << ","
+         << user.goal << ","
+         << user.typeOfAccount << ","
+         << user.weeklyWeightDiff << ","
+         << user.recommendedMacros.calories << ","
+         << user.recommendedMacros.protein << ","
+         << user.recommendedMacros.fats << ","
+         << user.recommendedMacros.carbohydrates << "\n";
 }

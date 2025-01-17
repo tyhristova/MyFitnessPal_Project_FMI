@@ -923,9 +923,29 @@ void editMeal()
     
 }
 
-void editPersonalInfo()
+void editPersonalInfo(User& user)
 {
+    cout << "Editing user data for " << user.username << endl;
 
+    updateUserInfo(user);
+    displayUpdatedInfo(user);
+
+    fstream file(USERS_FILE_NAME, ios::in | ios::out);
+    if (!file.is_open()) {
+        cerr << "Error: Could not open file for editing.\n";
+        return;
+    }
+
+    long long posToModify = findUserPosition(file, user.username);
+    if (posToModify == -1) {
+        cout << "User not found in the file.\n";
+        file.close();
+        return;
+    }
+
+    updateUserInFile(file, user, posToModify);
+    cout << "User data updated successfully!\n";
+    file.close();
 }
 
 vector<Workout> getWorkoutsForDay(const string& username, const string& date) {
@@ -1191,7 +1211,7 @@ void showLoggedMenu(User& user)
                 editMeal();
                 break;
             case 7:
-                editPersonalInfo();
+                editPersonalInfo(user);
                 break;
             case 8:
                 showUserInfo(user);
