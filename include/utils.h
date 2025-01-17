@@ -31,3 +31,5 @@ void updateUserInfo(User& user);
 void displayUpdatedInfo(const User& user);
 long long findUserPosition(fstream& file, const string& username);
 void updateUserInFile(fstream& file, const User& user, long long posToModify);
+bool updateMealInFile(const string& username, Meal& updatedMeal, const string filename);
+string getMealPeriod();

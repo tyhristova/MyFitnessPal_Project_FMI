@@ -583,3 +583,73 @@ void updateUserInFile(fstream& file, const User& user, long long posToModify) {
          << user.recommendedMacros.fats << ","
          << user.recommendedMacros.carbohydrates << "\n";
 }
+
+
+bool updateMealInFile(const string& username, Meal& updatedMeal, const string filename)
+{
+    ifstream inFile(filename);
+    ofstream outFile("tempFile.txt");
+
+    if (!inFile || !outFile) {
+        cerr << "Error: Could not open the files for reading/writing!\n";
+        return false;
+    }
+
+    string line;
+    bool mealFound = false;
+
+    while (getline(inFile, line)) {
+        size_t pos1 = line.find(',');
+        if (pos1 == string::npos) continue;
+
+        size_t pos2 = line.find(',', pos1 + 1);
+        if (pos2 == string::npos) continue;
+
+        size_t pos3 = line.find(',', pos2 + 1);
+        if (pos3 == string::npos) continue;
+
+        size_t pos4 = line.find(',', pos3 + 1);
+        if (pos4 == string::npos) continue;
+
+        size_t pos5 = line.find(',', pos4 + 1);
+        if (pos5 == string::npos) continue;
+
+        size_t pos6 = line.find(',', pos5 + 1);
+        if (pos6 == string::npos) continue;
+
+        string storedMealName = line.substr(0, pos1);
+        time_t storedTime = stoll(line.substr(pos6 + 1));
+
+        if (storedMealName == updatedMeal.name && areDatesEqual(storedTime, updatedMeal.createdDateTime)) {
+            outFile << updatedMeal.name << ","
+                    << updatedMeal.calories << ","
+                    << updatedMeal.dayPeriodType << ","
+                    << updatedMeal.protein << ","
+                    << updatedMeal.carbs << ","
+                    << updatedMeal.fats << ","
+                    << updatedMeal.createdDateTime << "\n";
+            mealFound = true;
+        } else {
+            outFile << line << "\n";
+        }
+    }
+
+    inFile.close();
+    outFile.close();
+
+    if (mealFound) {
+        remove(filename.c_str());
+        rename("tempFile.txt", filename.c_str());
+        return true;
+    } else {
+        remove("tempFile.txt");
+        return false;
+    }
+}
+
+string getMealPeriod() {
+    string period;
+    cout << "Enter the meal period (Breakfast, Lunch, Snack, or Dinner): ";
+    cin >> period;
+    return period;
+}

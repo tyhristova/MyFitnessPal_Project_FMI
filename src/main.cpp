@@ -9,8 +9,6 @@
 
 using namespace std;
 
-// TODO: test, do validations correct work, cin.ignore() - login
-
 void registrationMenu(User& user)
 {
     string passwordConfirmation;
@@ -918,9 +916,42 @@ void editWorkout()
     
 }
 
-void editMeal()
+void editMeal(User& user)
 {
-    
+    string fileName = BASE_USERS_FOLDER + user.username + MEALS_FILE_EXTENSION;
+    Meal mealToEdit;
+
+    cout << "Enter the name of the meal you want to edit: ";
+    cin.ignore();
+    getline(cin, mealToEdit.name);
+
+    if (!doesMealExist(mealToEdit.name, time(0), fileName)) {
+        cerr << "No meal with this name exists for today. Please add it first.\n";
+        return;
+    }
+
+    cout << "Enter new calories: ";
+    cin >> mealToEdit.calories;
+
+    if (user.typeOfAccount == "premium"){
+        cout << "Enter new protein: ";
+        cin >> mealToEdit.protein;
+
+        cout << "Enter new carbs: ";
+        cin >> mealToEdit.carbs;
+
+        cout << "Enter new fats: ";
+        cin >> mealToEdit.fats;
+    }
+
+    mealToEdit.dayPeriodType = getMealPeriod(); 
+    mealToEdit.createdDateTime = time(0);
+
+    if (updateMealInFile(user.username, mealToEdit, fileName)) {
+        cout << "Meal successfully updated for " << user.username << "!\n";
+    } else {
+        cout << "Failed to update the meal for " << user.username << "!\n";
+    }
 }
 
 void editPersonalInfo(User& user)
@@ -1193,7 +1224,7 @@ void showLoggedMenu(User& user)
         switch (userInput)
         {
             case 1:
-                viewDailyNutritionInfo(user);
+                viewDailyNutritionInfo(user); // TODO
                 break;
             case 2:
                 addMeal(user);
@@ -1208,10 +1239,10 @@ void showLoggedMenu(User& user)
                 editWorkout();
                 break;
             case 6:
-                editMeal();
+                editMeal(user); // TODO
                 break;
             case 7:
-                editPersonalInfo(user);
+                editPersonalInfo(user); // TODO
                 break;
             case 8:
                 showUserInfo(user);
