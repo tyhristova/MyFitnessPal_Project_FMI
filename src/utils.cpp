@@ -343,7 +343,7 @@ string extractDateFromLine(const string& line) {
     return timeToDateString(timestamp);
 }
 
-double calculateTotalCaloriesFromMeals(const string& mealsFile) {
+double calculateTotalCaloriesForToday(const string& mealsFile, const string& workoutsFile) {
     ifstream inFile(mealsFile);
     if (!inFile) {
         cerr << "Error: Could not open meals file!\n";
@@ -354,17 +354,53 @@ double calculateTotalCaloriesFromMeals(const string& mealsFile) {
     double totalCalories = 0.0;
 
     while (getline(inFile, line)) {
-        size_t pos1 = line.find(',');
-        if (pos1 == string::npos) continue; // Skip invalid lines
+        size_t lastComma = line.find_last_of(',');
+            if (lastComma == string::npos) continue;
 
-        size_t pos2 = line.find(',', pos1 + 1);
-        if (pos2 == string::npos) continue; // Skip invalid lines
+        string timestampStr = line.substr(lastComma + 1);
+        time_t mealTime = stol(timestampStr);
 
-        double calories = stod(line.substr(pos1 + 1, pos2 - pos1 - 1)); // Extract calories
-        totalCalories += calories;
+        if (areDatesEqual(time(0), mealTime)){
+            size_t pos1 = line.find(',');
+            if (pos1 == string::npos) continue;
+
+            size_t pos2 = line.find(',', pos1 + 1);
+            if (pos2 == string::npos) continue;
+
+            double calories = stod(line.substr(pos1 + 1, pos2 - pos1 - 1));
+            totalCalories += calories;
+        }
     }
 
     inFile.close();
+
+    ifstream inFile2(workoutsFile);
+    if (!inFile2) {
+        cerr << "Error: Could not open workouts file!\n";
+        return 0.0;
+    }
+
+    while (getline(inFile2, line)) {
+        size_t lastComma = line.find_last_of(',');
+            if (lastComma == string::npos) continue;
+
+        string timestampStr = line.substr(lastComma + 1);
+        time_t mealTime = stol(timestampStr);
+
+        if (areDatesEqual(time(0), mealTime)){
+            size_t pos1 = line.find(',');
+            if (pos1 == string::npos) continue;
+
+            size_t pos2 = line.find(',', pos1 + 1);
+            if (pos2 == string::npos) continue;
+
+            double calories = stod(line.substr(pos1 + 1, pos2 - pos1 - 1));
+            totalCalories -= calories;
+        }
+    }
+
+    inFile2.close();
+
     return totalCalories;
 }
 
@@ -377,15 +413,22 @@ double calculateTotalProteinFromMeals(const string& mealsFile) {
 
     string line;
     double totalProtein = 0.0;
+    time_t now = time(0);
 
     while (getline(inFile, line)) {
         size_t pos1 = line.find(',');
         size_t pos2 = line.find(',', pos1 + 1);
         size_t pos3 = line.find(',', pos2 + 1);
-        if (pos1 == string::npos || pos2 == string::npos || pos3 == string::npos) continue;
+        size_t pos4 = line.find(',', pos3 + 1);
+        size_t lastComma = line.find_last_of(',');
+        if (pos1 == string::npos || pos2 == string::npos || pos3 == string::npos || pos4 == string::npos) continue;
 
-        double protein = stod(line.substr(pos2 + 1, pos3 - pos2 - 1)); // Extract protein
-        totalProtein += protein;
+        double protein = stod(line.substr(pos3 + 1, pos4 - pos3 - 1));
+        time_t mealTimestamp = stol(line.substr(lastComma + 1));
+
+        if (areDatesEqual(mealTimestamp, now)) {
+            totalProtein += protein;
+        } 
     }
 
     inFile.close();
@@ -401,16 +444,23 @@ double calculateTotalCarbsFromMeals(const string& mealsFile) {
 
     string line;
     double totalCarbs = 0.0;
+    time_t now = time(0);
 
     while (getline(inFile, line)) {
         size_t pos1 = line.find(',');
         size_t pos2 = line.find(',', pos1 + 1);
         size_t pos3 = line.find(',', pos2 + 1);
         size_t pos4 = line.find(',', pos3 + 1);
-        if (pos1 == string::npos || pos2 == string::npos || pos3 == string::npos || pos4 == string::npos) continue;
+        size_t pos5 = line.find(',', pos4 + 1);
+        size_t lastComma = line.find_last_of(',');
+        if (pos1 == string::npos || pos2 == string::npos || pos3 == string::npos || pos4 == string::npos || pos5 == string::npos) continue;
 
-        double carbs = stod(line.substr(pos3 + 1, pos4 - pos3 - 1)); // Extract carbs
-        totalCarbs += carbs;
+        double carbs = stod(line.substr(pos4 + 1, pos5 - pos4 - 1));
+        time_t mealTimestamp = stol(line.substr(lastComma + 1));
+
+        if (areDatesEqual(mealTimestamp, now)) {
+            totalCarbs += carbs;
+        } 
     }
 
     inFile.close();
@@ -426,6 +476,7 @@ double calculateTotalFatsFromMeals(const string& mealsFile) {
 
     string line;
     double totalFats = 0.0;
+    time_t now = time(0);
 
     while (getline(inFile, line)) {
         size_t pos1 = line.find(',');
@@ -433,10 +484,16 @@ double calculateTotalFatsFromMeals(const string& mealsFile) {
         size_t pos3 = line.find(',', pos2 + 1);
         size_t pos4 = line.find(',', pos3 + 1);
         size_t pos5 = line.find(',', pos4 + 1);
-        if (pos1 == string::npos || pos2 == string::npos || pos3 == string::npos || pos4 == string::npos || pos5 == string::npos) continue;
+        size_t pos6 = line.find(',', pos5 + 1);
+        size_t lastComma = line.find_last_of(',');
+        if (pos1 == string::npos || pos2 == string::npos || pos3 == string::npos || pos4 == string::npos || pos5 == string::npos || pos6 == string::npos) continue;
 
-        double fats = stod(line.substr(pos4 + 1, pos5 - pos4 - 1)); // Extract fats
-        totalFats += fats;
+        double fats = stod(line.substr(pos5 + 1, pos6 - pos5 - 1));
+        time_t mealTimestamp = stol(line.substr(lastComma + 1));
+
+        if (areDatesEqual(mealTimestamp, now)) {
+            totalFats += fats;
+        } 
     }
 
     inFile.close();

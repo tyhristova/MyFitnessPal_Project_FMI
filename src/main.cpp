@@ -56,6 +56,7 @@ void registrationMenu(User& user)
     // Age
     do {
         cout << "Age: ";
+        cin.ignore();
         cin >> user.age;
 
         if (!isAgeValid(user.age)) {
@@ -67,7 +68,6 @@ void registrationMenu(User& user)
     // Gender
     do {
         cout << "Gender (Male or Female): ";
-        cin.ignore();
         getline(cin, user.gender);
         toLowerCase(user.gender);
 
@@ -80,6 +80,7 @@ void registrationMenu(User& user)
     // Height
     do {
         cout << "Height (cm): ";
+        cin.ignore();
         cin >> user.height;
 
         if (!isHeightValid(user.height)) {
@@ -91,6 +92,7 @@ void registrationMenu(User& user)
     // Weight
     do {
         cout << "Weight (kg): ";
+        cin.ignore();
         cin >> user.weight;
 
         if (!isWeightValid(user.weight)) {
@@ -102,7 +104,6 @@ void registrationMenu(User& user)
     // Level of Activity
     do {
         cout << "Level of activity (Sedentary, Low, Moderate, Active, Very active): ";
-        cin.ignore();
         getline(cin, user.levelOfActivity);
         toLowerCase(user.levelOfActivity);
 
@@ -133,6 +134,7 @@ void registrationMenu(User& user)
         do
         {
             cout << "Write how much weight difference you want per week: ";
+            cin.ignore();
             cin >> user.weeklyWeightDiff;
 
             if (!isWeeklyWeightDiffValid(user.weeklyWeightDiff)) {
@@ -144,7 +146,6 @@ void registrationMenu(User& user)
     // Type of Account
     do {
         cout << "Type of account (Standard or Premium): ";
-        cin.ignore();
         getline(cin, user.typeOfAccount);
         toLowerCase(user.typeOfAccount);
 
@@ -391,7 +392,7 @@ void loginMenu(User& user)
     string username;
     string password;
 
-    cout << "If you want to go back to the main menu press 'M'.\n";
+    cout << "\nIf you want to go back to the main menu press 'M'.\n";
 
     while (true) {
         cout << "Username: ";
@@ -456,33 +457,15 @@ void showUserInfo(User& user)
 
 void showCurrentNutrition(User& user)
 {
-    // calculate functions
-    // cout << currentCalories << "/" << suggestedCalories << endl;
-    // do the same for macros if account type is Premium
-
-    calculateCaloriesAndMacros(user);
-
-    cout << "Recommended Calories: " << user.recommendedMacros.calories << endl;
-
-    if (user.typeOfAccount == "premium")
-    {
-        cout << "Recommended Macros (Premium Account):" << endl;
-        cout << "Protein: " << user.recommendedMacros.protein << " g" << endl;
-        cout << "Carbohydrates: " << user.recommendedMacros.carbohydrates << " g" << endl;
-        cout << "Fats: " << user.recommendedMacros.fats << " g" << endl;
-    }
-    else
-    {
-        cout << "Upgrade to a premium account to see detailed macro recommendations!" << endl;
-    }
-
     string mealsFile = BASE_USERS_FOLDER + user.username + MEALS_FILE_EXTENSION;
-    double currentCalories = calculateTotalCaloriesFromMeals(mealsFile);
+    string workoutsFile = BASE_USERS_FOLDER + user.username + WORKOUTS_FILE_EXTENSION;
+
+    double currentCalories = calculateTotalCaloriesForToday(mealsFile, workoutsFile);
     double currentProtein = calculateTotalProteinFromMeals(mealsFile);
     double currentCarbs = calculateTotalCarbsFromMeals(mealsFile);
     double currentFats = calculateTotalFatsFromMeals(mealsFile);
 
-    cout << "\nCurrent Consumption:" << endl;
+    cout << "Current Consumption:" << endl;
     cout << "Calories: " << currentCalories << " / " << user.recommendedMacros.calories << endl;
 
     if (user.typeOfAccount == "premium")
@@ -491,133 +474,269 @@ void showCurrentNutrition(User& user)
         cout << "Carbohydrates: " << currentCarbs << " g / " << user.recommendedMacros.carbohydrates << " g" << endl;
         cout << "Fats: " << currentFats << " g / " << user.recommendedMacros.fats << " g" << endl;
     }
+
+    cout << endl;
 }
 
-void viewDailyNutritionInfo(User& user)
-{
-    calculateCaloriesAndMacros(user);
+// TODO:
+double safeStod(const std::string& str) {
+    try {
+        return std::stod(str);
+    }
+    catch (const std::invalid_argument& e) {
+        std::cerr << "Invalid argument: " << str << " is not a valid number.\n";
+        return 0.0;
+    }
+    catch (const std::out_of_range& e) {
+        std::cerr << "Out of range: " << str << " is too large or too small for a double.\n";
+        return 0.0;
+    }
+}
 
+// TODO:
+// void viewDailyNutritionInfo(User& user)
+// {
+//     // calculateCaloriesAndMacros(user);
+
+//     cout << "Daily Nutrition Information for " << user.username << ":\n";
+//     cout << "Recommended Calories: " << user.recommendedMacros.calories << " kcal" << endl;
+
+//     if (user.typeOfAccount == "premium")
+//     {
+//         cout << "Recommended Macros (Premium Account):" << endl;
+//         cout << "Protein: " << user.recommendedMacros.protein << " g" << endl;
+//         cout << "Carbohydrates: " << user.recommendedMacros.carbohydrates << " g" << endl;
+//         cout << "Fats: " << user.recommendedMacros.fats << " g" << endl;
+//     }
+
+//     time_t now = time(0);
+
+//     string mealsFile = BASE_USERS_FOLDER + user.username + MEALS_FILE_EXTENSION;
+//     string workoutsFile = BASE_USERS_FOLDER + user.username + WORKOUTS_FILE_EXTENSION;
+//     double currentCalories = 0.0, currentProtein = 0.0, currentCarbs = 0.0, currentFats = 0.0;
+//     double workoutCalories = 0.0;
+
+//     ifstream mealsInFile(mealsFile);
+//     if (mealsInFile.is_open())
+//     {
+//         string line;
+//         while (getline(mealsInFile, line))
+//         {
+//             size_t lastComma = line.find_last_of(',');
+//             if (lastComma == string::npos) continue;
+
+//             string timestampStr = line.substr(lastComma + 1);
+//             time_t mealTime = stol(timestampStr);
+
+//             if (areDatesEqual(now, mealTime))
+//             {
+//                 size_t pos1 = line.find(',');
+//                 if (pos1 == string::npos) continue;
+
+//                 size_t pos2 = line.find(',', pos1 + 1);
+//                 if (pos2 == string::npos) continue;
+
+//                 size_t pos3 = line.find(',', pos2 + 1);
+//                 if (pos3 == string::npos) continue;
+
+//                 size_t pos4 = line.find(',', pos3 + 1);
+//                 if (pos4 == string::npos) continue;
+
+//                 double calories = safeStod(line.substr(pos1 + 1, pos2 - pos1 - 1));
+//                 double protein = safeStod(line.substr(pos2 + 1, pos3 - pos2 - 1));
+//                 double carbs = safeStod(line.substr(pos3 + 1, pos4 - pos3 - 1));
+//                 double fats = safeStod(line.substr(pos4 + 1, lastComma - pos4 - 1));
+
+//                 currentCalories += calories;
+//                 currentProtein += protein;
+//                 currentCarbs += carbs;
+//                 currentFats += fats;
+//             }
+//         }
+//         mealsInFile.close();
+//     }
+//     else
+//     {
+//         cerr << "Error: Could not open the meals file for reading.\n";
+//     }
+
+//     ifstream workoutsInFile(workoutsFile);
+//     if (workoutsInFile.is_open())
+//     {
+//         string line;
+//         while (getline(workoutsInFile, line))
+//         {
+//             size_t lastComma = line.find_last_of(',');
+//             if (lastComma == string::npos) continue;
+
+//             string timestampStr = line.substr(lastComma + 1);
+//             time_t workoutTime = stol(timestampStr);
+
+//             if (areDatesEqual(now, workoutTime))
+//             {
+//                 size_t pos1 = line.find(',');
+//                 if (pos1 == string::npos) continue;
+
+//                 size_t pos2 = line.find(',', pos1 + 1);
+//                 if (pos2 == string::npos) continue;
+
+//                 double calories = safeStod(line.substr(pos1 + 1, pos2 - pos1 - 1));
+
+//                 workoutCalories += calories;
+//             }
+//         }
+//         workoutsInFile.close();
+//     }
+//     else
+//     {
+//         cerr << "Error: Could not open the workouts file for reading.\n";
+//     }
+
+//     double remainingCalories = user.recommendedMacros.calories - currentCalories + workoutCalories;
+//     double remainingProtein = user.recommendedMacros.protein - currentProtein;
+//     double remainingCarbs = user.recommendedMacros.carbohydrates - currentCarbs;
+//     double remainingFats = user.recommendedMacros.fats - currentFats;
+
+//     cout << "\nCurrent Intake (Today):\n";
+//     cout << "Calories from Meals: " << currentCalories << " kcal\n";
+//     cout << "Calories Burned from Workouts: " << workoutCalories << " kcal\n";
+
+//     if (user.typeOfAccount == "premium")
+//     {
+//         cout << "Protein: " << currentProtein << " g\n";
+//         cout << "Carbohydrates: " << currentCarbs << " g\n";
+//         cout << "Fats: " << currentFats << " g\n";
+//     }
+
+//     cout << "\nRemaining Goals for the Day:\n";
+//     cout << "Calories: " << (remainingCalories > 0 ? remainingCalories : 0) << " kcal\n";
+
+//     if (user.typeOfAccount == "premium")
+//     {
+//         cout << "Protein: " << (remainingProtein > 0 ? remainingProtein : 0) << " g\n";
+//         cout << "Carbohydrates: " << (remainingCarbs > 0 ? remainingCarbs : 0) << " g\n";
+//         cout << "Fats: " << (remainingFats > 0 ? remainingFats : 0) << " g\n";
+//     }
+// }
+
+void viewDailyNutritionInfo(User& user) {
+    // Debugging: Confirm the function is called
+    cout << "viewDailyNutritionInfo function started for user: " << user.username << endl;
+
+    // Display user's daily nutrition info
     cout << "Daily Nutrition Information for " << user.username << ":\n";
     cout << "Recommended Calories: " << user.recommendedMacros.calories << " kcal" << endl;
 
-    if (user.typeOfAccount == "premium")
-    {
+    if (user.typeOfAccount == "premium") {
         cout << "Recommended Macros (Premium Account):" << endl;
         cout << "Protein: " << user.recommendedMacros.protein << " g" << endl;
         cout << "Carbohydrates: " << user.recommendedMacros.carbohydrates << " g" << endl;
         cout << "Fats: " << user.recommendedMacros.fats << " g" << endl;
     }
 
+    // Prepare file paths
     time_t now = time(0);
-
     string mealsFile = BASE_USERS_FOLDER + user.username + MEALS_FILE_EXTENSION;
     string workoutsFile = BASE_USERS_FOLDER + user.username + WORKOUTS_FILE_EXTENSION;
+
+    // Initialize counters
     double currentCalories = 0.0, currentProtein = 0.0, currentCarbs = 0.0, currentFats = 0.0;
     double workoutCalories = 0.0;
 
+    // Process meals file
     ifstream mealsInFile(mealsFile);
-    if (mealsInFile.is_open())
-    {
+    if (mealsInFile.is_open()) {
         string line;
-        while (getline(mealsInFile, line))
-        {
+        while (getline(mealsInFile, line)) {
+            // Split the line into components
+            size_t pos1 = line.find(',');
+            size_t pos2 = line.find(',', pos1 + 1);
+            size_t pos3 = line.find(',', pos2 + 1);
+            size_t pos4 = line.find(',', pos3 + 1);
+            size_t pos5 = line.find(',', pos4 + 1);
             size_t lastComma = line.find_last_of(',');
-            if (lastComma == string::npos) continue;
 
+            // Validate line format
+            if (pos1 == string::npos || pos2 == string::npos || pos3 == string::npos || 
+                pos4 == string::npos || pos5 == string::npos || lastComma == string::npos) {
+                continue; // Skip invalid lines
+            }
+
+            // Extract and convert timestamp
             string timestampStr = line.substr(lastComma + 1);
             time_t mealTime = stol(timestampStr);
 
-            if (areDatesEqual(now, mealTime))
-            {
-                size_t pos1 = line.find(',');
-                if (pos1 == string::npos) continue;
-
-                size_t pos2 = line.find(',', pos1 + 1);
-                if (pos2 == string::npos) continue;
-
-                size_t pos3 = line.find(',', pos2 + 1);
-                if (pos3 == string::npos) continue;
-
-                size_t pos4 = line.find(',', pos3 + 1);
-                if (pos4 == string::npos) continue;
-
-                double calories = stod(line.substr(pos1 + 1, pos2 - pos1 - 1));
-                double protein = stod(line.substr(pos2 + 1, pos3 - pos2 - 1));
-                double carbs = stod(line.substr(pos3 + 1, pos4 - pos3 - 1));
-                double fats = stod(line.substr(pos4 + 1, lastComma - pos4 - 1));
-
-                currentCalories += calories;
-                currentProtein += protein;
-                currentCarbs += carbs;
-                currentFats += fats;
+            // Check if meal is from today
+            if (areDatesEqual(now, mealTime)) {
+                // Use safeStod function to convert strings to doubles
+                currentCalories += safeStod(line.substr(pos1 + 1, pos2 - pos1 - 1));
+                currentProtein += safeStod(line.substr(pos3 + 1, pos4 - pos3 - 1));
+                currentCarbs += safeStod(line.substr(pos4 + 1, pos5 - pos4 - 1));
+                currentFats += safeStod(line.substr(pos5 + 1, lastComma - pos5 - 1));
             }
         }
         mealsInFile.close();
-    }
-    else
-    {
+    } else {
         cerr << "Error: Could not open the meals file for reading.\n";
     }
 
+    // Process workouts file
     ifstream workoutsInFile(workoutsFile);
-    if (workoutsInFile.is_open())
-    {
+    if (workoutsInFile.is_open()) {
         string line;
-        while (getline(workoutsInFile, line))
-        {
+        while (getline(workoutsInFile, line)) {
+            // Split the line into components
+            size_t pos1 = line.find(',');
+            size_t pos2 = line.find(',', pos1 + 1);
             size_t lastComma = line.find_last_of(',');
-            if (lastComma == string::npos) continue;
 
+            // Validate line format
+            if (pos1 == string::npos || pos2 == string::npos || lastComma == string::npos) {
+                continue; // Skip invalid lines
+            }
+
+            // Extract and convert timestamp
             string timestampStr = line.substr(lastComma + 1);
             time_t workoutTime = stol(timestampStr);
 
-            if (areDatesEqual(now, workoutTime))
-            {
-                size_t pos1 = line.find(',');
-                if (pos1 == string::npos) continue;
-
-                size_t pos2 = line.find(',', pos1 + 1);
-                if (pos2 == string::npos) continue;
-
-                double calories = stod(line.substr(pos1 + 1, pos2 - pos1 - 1));
-
-                workoutCalories += calories;
+            // Check if workout is from today
+            if (areDatesEqual(now, workoutTime)) {
+                // Use safeStod function to convert strings to doubles
+                workoutCalories += safeStod(line.substr(pos1 + 1, pos2 - pos1 - 1));
             }
         }
         workoutsInFile.close();
-    }
-    else
-    {
+    } else {
         cerr << "Error: Could not open the workouts file for reading.\n";
     }
 
+    // Calculate remaining goals
     double remainingCalories = user.recommendedMacros.calories - currentCalories + workoutCalories;
     double remainingProtein = user.recommendedMacros.protein - currentProtein;
     double remainingCarbs = user.recommendedMacros.carbohydrates - currentCarbs;
     double remainingFats = user.recommendedMacros.fats - currentFats;
 
+    // Display today's intake
     cout << "\nCurrent Intake (Today):\n";
     cout << "Calories from Meals: " << currentCalories << " kcal\n";
     cout << "Calories Burned from Workouts: " << workoutCalories << " kcal\n";
 
-    if (user.typeOfAccount == "premium")
-    {
+    if (user.typeOfAccount == "premium") {
         cout << "Protein: " << currentProtein << " g\n";
         cout << "Carbohydrates: " << currentCarbs << " g\n";
         cout << "Fats: " << currentFats << " g\n";
     }
 
+    // Display remaining goals
     cout << "\nRemaining Goals for the Day:\n";
     cout << "Calories: " << (remainingCalories > 0 ? remainingCalories : 0) << " kcal\n";
 
-    if (user.typeOfAccount == "premium")
-    {
+    if (user.typeOfAccount == "premium") {
         cout << "Protein: " << (remainingProtein > 0 ? remainingProtein : 0) << " g\n";
         cout << "Carbohydrates: " << (remainingCarbs > 0 ? remainingCarbs : 0) << " g\n";
         cout << "Fats: " << (remainingFats > 0 ? remainingFats : 0) << " g\n";
     }
 }
-
 
 bool addMealToFile(const string& username, Meal& meal, const string filename)
 {
@@ -671,6 +790,7 @@ void addMeal(User& user)
 
     do {
         cout << "Name: ";
+        cin.ignore();
         getline(cin, mealToAdd.name);
 
         if (doesMealExist(mealToAdd.name, time(0), fileName))
@@ -712,6 +832,7 @@ void addWorkout(User& user)
 
     do {
         cout << "Name: ";
+        cin.ignore();
         getline(cin, workoutToAdd.name);
 
         if (doesWorkoutExist(workoutToAdd.name, time(0), fileName))
@@ -735,16 +856,15 @@ void addWorkout(User& user)
     }
 }
 
-// Deletes all lines in the file corresponding to the specified date
 void deleteAllInfoForDate(const string& fileName, const string& date) {
-    ifstream inFile(fileName); // Open file for reading
+    ifstream inFile(fileName);
     if (!inFile) {
         cerr << "Error: Could not open file " << fileName << " for reading!\n";
         return;
     }
 
-    string tempFileName = fileName + ".tmp"; // Temporary file
-    ofstream outFile(tempFileName);         // Open temporary file for writing
+    string tempFileName = fileName + ".tmp";
+    ofstream outFile(tempFileName); 
     if (!outFile) {
         cerr << "Error: Could not create temporary file " << tempFileName << "!\n";
         inFile.close();
@@ -786,8 +906,8 @@ void deleteAllInfo(User& user)
     cout << "Enter date to delete all info for the day('Year-Month-Day'): " << endl;
     cin >> date;
 
-    string mealsFileName = "../Users/" + user.username + "-meals.txt";
-    string workoutsFileName = "../Users/" + user.username + "-workouts.txt";
+    string mealsFileName = BASE_USERS_FOLDER + user.username + MEALS_FILE_EXTENSION;
+    string workoutsFileName = BASE_USERS_FOLDER + user.username + WORKOUTS_FILE_EXTENSION;
 
     deleteAllInfoForDate(mealsFileName, date);
     deleteAllInfoForDate(workoutsFileName, date);
@@ -1016,13 +1136,13 @@ void showLoggedMenu(User& user)
     bool isLoggedout = false;
     bool isChoiceValid = true;
 
-    cout << "Hello, " << user.username << "!\n" << endl;
-
-    showCurrentNutrition(user);
+    cout << "\nHello, " << user.username << "!\n" << endl;
 
     do
     {
-        cout << "Select one of the options below:\n";
+        showCurrentNutrition(user);
+
+        cout << "\n\nSelect one of the options below:\n";
         cout << "1. View daily nutritional info\n";
         cout << "2. Add Meal\n";
         cout << "3. Add Workout\n";
@@ -1106,7 +1226,7 @@ void showMainMenu()
     bool isExited = false;
     bool isChoiceValid = true;
 
-    cout << "Welcome to MyFitnessPal!\n\n";
+    cout << "\nWelcome to MyFitnessPal!\n\n";
 
     do
     {

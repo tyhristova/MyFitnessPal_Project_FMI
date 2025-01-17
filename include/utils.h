@@ -23,7 +23,7 @@ bool doesMealExist(const string mealName, time_t createdDateTime, const string f
 bool doesWorkoutExist(const string workoutName, time_t createdDateTime, const string filename);
 string timeToDateString(time_t timestamp);
 string extractDateFromLine(const string& line);
-double calculateTotalCaloriesFromMeals(const string& mealsFile);
+double calculateTotalCaloriesForToday(const string& mealsFile, const string& workoutsFile);
 double calculateTotalProteinFromMeals(const string& mealsFile);
 double calculateTotalCarbsFromMeals(const string& mealsFile);
 double calculateTotalFatsFromMeals(const string& mealsFile);
