@@ -653,3 +653,51 @@ string getMealPeriod() {
     cin >> period;
     return period;
 }
+
+bool updateWorkoutInFile(Workout& updatedWorkout, const string& filename)
+{
+    ifstream inFile(filename);
+    ofstream outFile("tempFile.txt");
+
+    if (!inFile || !outFile) {
+        cerr << "Error: Could not open the files for reading/writing!\n";
+        return false;
+    }
+
+    string line;
+    bool workoutFound = false;
+
+    while (getline(inFile, line)) {
+        size_t pos1 = line.find(',');
+        size_t pos2 = line.find(',', pos1 + 1);
+
+        if (pos1 == string::npos || pos2 == string::npos) {
+            outFile << line << "\n";
+            continue;
+        }
+
+        string storedWorkoutName = line.substr(0, pos1);
+        time_t storedTime = stoll(line.substr(pos2 + 1));
+
+        if (storedWorkoutName == updatedWorkout.name && areDatesEqual(storedTime, time(0))) {
+            outFile << updatedWorkout.name << ","
+                    << updatedWorkout.calories << ","
+                    << updatedWorkout.createdDateTime << "\n";
+            workoutFound = true;
+        } else {
+            outFile << line << "\n";
+        }
+    }
+
+    inFile.close();
+    outFile.close();
+
+    if (workoutFound) {
+        remove(filename.c_str());
+        rename("tempFile.txt", filename.c_str());
+        return true;
+    } else {
+        remove("tempFile.txt");
+        return false;
+    }
+}
