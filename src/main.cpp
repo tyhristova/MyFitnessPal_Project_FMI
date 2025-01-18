@@ -833,6 +833,7 @@ void editMeal(User& user)
     }
 }
 
+// TODO: outputs "Invalid goal"
 void editPersonalInfo(User& user)
 {
     cout << "Editing user data for " << user.username << endl;

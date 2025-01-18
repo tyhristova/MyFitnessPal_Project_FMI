@@ -27,7 +27,11 @@ double calculateTotalCaloriesForToday(const string& mealsFile, const string& wor
 double calculateTotalProteinFromMeals(const string& mealsFile);
 double calculateTotalCarbsFromMeals(const string& mealsFile);
 double calculateTotalFatsFromMeals(const string& mealsFile);
+void clearInputBuffer();
+void recalculateUserMacros(User& user);
 void updateUserInfo(User& user);
+double getValidatedWeight();
+string getValidatedGoal();
 void displayUpdatedInfo(const User& user);
 long long findUserPosition(fstream& file, const string& username);
 void updateUserInFile(fstream& file, const User& user, long long posToModify);

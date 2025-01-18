@@ -506,41 +506,55 @@ void clearInputBuffer() {
     cin.ignore(numeric_limits<streamsize>::max(), '\n');
 }
 
-// TODO: outputs "Invalid goal."
-void updateUserInfo(User& user) {
+void recalculateUserMacros(User& user)
+{
+    user.recommendedMacros.calories = calculateMaintenanceCalories(
+        user.gender, user.weight, user.height, user.age, user.levelOfActivity);
+
+    user.recommendedMacros.protein = calculateProtein(user.recommendedMacros.calories, user.goal);
+    user.recommendedMacros.carbohydrates = calculateCarbs(user.recommendedMacros.calories, user.goal);
+    user.recommendedMacros.fats = calculateFats(user.recommendedMacros.calories, user.goal);
+
+    cout << "Recalculated recommended macros for " << user.username << ":\n";
+    cout << "Calories: " << user.recommendedMacros.calories << " kcal\n";
+    cout << "Protein: " << user.recommendedMacros.protein << " g\n";
+    cout << "Carbohydrates: " << user.recommendedMacros.carbohydrates << " g\n";
+    cout << "Fats: " << user.recommendedMacros.fats << " g\n";
+}
+
+void updateUserInfo(User& user)
+{
+    user.weight = getValidatedWeight();
+    user.goal = getValidatedGoal();
+    recalculateUserMacros(user);
+}
+
+double getValidatedWeight()
+{
     double newWeight;
-    string newGoal;
-
-    cout << "Current weight: " << user.weight << " kg. Enter new weight: ";
     while (true) {
+        cout << "Enter new weight: ";
         if (cin >> newWeight && isWeightValid(newWeight)) {
-            user.weight = newWeight;
-            break;
-        } else {
-            cout << "Invalid weight. Please enter a value between " << WEIGHT_MIN << " and " << WEIGHT_MAX << ": ";
-            cin.clear();
-            clearInputBuffer();
+            return newWeight;
         }
+        cerr << "Invalid weight. Please enter a value between " << WEIGHT_MIN << " and " << WEIGHT_MAX << ": ";
+        cin.clear();
+        clearInputBuffer();
     }
+}
 
-    cout << "Current goal: " << user.goal << ". Enter new goal (weight loss/weight maintenance/weight gain): ";
+string getValidatedGoal()
+{
+    string newGoal;
     while (true) {
+        cout << "Enter new goal (weight loss/weight maintenance/weight gain): ";
         cin >> newGoal;
         toLowerCase(newGoal);
-
         if (isGoalValid(newGoal)) {
-            user.goal = newGoal;
-            break;
-        } else {
-            cout << "Invalid goal. Please enter one of the following: weight loss, weight maintenance, or weight gain: ";
-            clearInputBuffer();
+            return newGoal;
         }
-
-    double maintenanceCalories = calculateMaintenanceCalories(user.gender, user.weight, user.height, user.age, user.levelOfActivity);
-    user.recommendedMacros.calories = maintenanceCalories;
-    user.recommendedMacros.protein = calculateProtein(maintenanceCalories, user.goal);
-    user.recommendedMacros.carbohydrates = calculateCarbs(maintenanceCalories, user.goal);
-    user.recommendedMacros.fats = calculateFats(maintenanceCalories, user.goal);
+        cerr << "Invalid goal. Please enter one of: weight loss, weight maintenance, or weight gain.\n";
+        clearInputBuffer();
     }
 }
 
@@ -551,39 +565,39 @@ void displayUpdatedInfo(const User& user) {
     cout << "Recommended Calories: " << user.recommendedMacros.calories << " kcal\n";
 }
 
-long long findUserPosition(fstream& file, const string& username) {
+long long findUserPosition(fstream& file, const string& username)
+{
+    file.clear();
+    file.seekg(0, ios::beg);
+
     string line;
-    long long posToModify = -1;
+    long long position = file.tellg();
+
     while (getline(file, line)) {
-        size_t firstComma = line.find(',');
-        string currentUsername = line.substr(0, firstComma);
-        if (currentUsername == username) {
-            posToModify = file.tellg();
-            break;
+        size_t pos = line.find(',');
+        if (pos != string::npos && line.substr(0, pos) == username) {
+            return position;
         }
+        position = file.tellg();
     }
-    return posToModify;
+    return -1;
 }
 
-void updateUserInFile(fstream& file, const User& user, long long posToModify) {
+void updateUserInFile(fstream& file, const User& user, long long posToModify)
+{
     file.seekp(posToModify);
 
-    file << user.username << ","
-         << user.password << ","
-         << user.age << ","
-         << user.gender << ","
-         << user.height << ","
-         << user.weight << ","
-         << user.levelOfActivity << ","
-         << user.goal << ","
-         << user.typeOfAccount << ","
-         << user.weeklyWeightDiff << ","
-         << user.recommendedMacros.calories << ","
-         << user.recommendedMacros.protein << ","
-         << user.recommendedMacros.fats << ","
-         << user.recommendedMacros.carbohydrates << "\n";
-}
+    string updatedLine = user.username + "," + user.password + "," + to_string(user.age) + ","
+                         + user.gender + "," + to_string(user.height) + "," + to_string(user.weight) + ","
+                         + user.levelOfActivity + "," + user.goal + "," + user.typeOfAccount + ","
+                         + to_string(user.weeklyWeightDiff) + "," + to_string(user.recommendedMacros.calories) + ","
+                         + to_string(user.recommendedMacros.protein) + "," + to_string(user.recommendedMacros.carbohydrates) + ","
+                         + to_string(user.recommendedMacros.fats) + "\n";
 
+    file << updatedLine;
+
+    file << string(updatedLine.size(), ' ') << "\n";
+}
 
 bool updateMealInFile(const string& username, Meal& updatedMeal, const string filename)
 {
