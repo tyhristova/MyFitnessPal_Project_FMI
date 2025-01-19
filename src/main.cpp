@@ -54,7 +54,7 @@ void registrationMenu(User& user)
     // Age
     do {
         cout << "Age: ";
-        cin.ignore();
+        // cin.ignore();
         cin >> user.age;
 
         if (!isAgeValid(user.age)) {
@@ -66,6 +66,7 @@ void registrationMenu(User& user)
     // Gender
     do {
         cout << "Gender (Male or Female): ";
+        cin.ignore();
         getline(cin, user.gender);
         toLowerCase(user.gender);
 
@@ -102,6 +103,7 @@ void registrationMenu(User& user)
     // Level of Activity
     do {
         cout << "Level of activity (Sedentary, Low, Moderate, Active, Very active): ";
+        cin.ignore();
         getline(cin, user.levelOfActivity);
         toLowerCase(user.levelOfActivity);
 
@@ -144,6 +146,7 @@ void registrationMenu(User& user)
     // Type of Account
     do {
         cout << "Type of account (Standard or Premium): ";
+        cin.ignore();
         getline(cin, user.typeOfAccount);
         toLowerCase(user.typeOfAccount);
 
@@ -309,6 +312,7 @@ User getUserFromFile(const string& username, const string& filename)
 
         pos = line.find(',');
         string storedUsername = line.substr(0, pos);
+
         line.erase(0, pos + 1);
 
         if (storedUsername == username) {
