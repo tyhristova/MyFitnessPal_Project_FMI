@@ -729,7 +729,6 @@ void deleteAllInfoForDate(const string& fileName, const string& date) {
     while (getline(inFile, line)) {
         string extractedDate = extractDateFromLine(line);
 
-        // If the date doesn't match, write the line to the temporary file
         if (extractedDate != date) {
             outFile << line << "\n";
         } else {
@@ -748,7 +747,7 @@ void deleteAllInfoForDate(const string& fileName, const string& date) {
         }
     } else {
         cout << "No records found for the date " << date << " in " << fileName << ".\n";
-        remove(tempFileName.c_str()); // Remove temp file if no changes
+        remove(tempFileName.c_str());
     }
 }
 
@@ -833,7 +832,6 @@ void editMeal(User& user)
     }
 }
 
-// TODO: outputs "Invalid goal"
 void editPersonalInfo(User& user)
 {
     cout << "Editing user data for " << user.username << endl;
@@ -860,7 +858,7 @@ void editPersonalInfo(User& user)
 }
 
 vector<Workout> getWorkoutsForDay(const string& username, const string& date) {
-    string fileName = "../Users/" + username + "-workouts.txt";
+    string fileName = BASE_USERS_FOLDER + username + WORKOUTS_FILE_EXTENSION;
     ifstream inFile(fileName);
 
     if (!inFile) {
@@ -870,7 +868,6 @@ vector<Workout> getWorkoutsForDay(const string& username, const string& date) {
 
     vector<Workout> workoutsForDay;
 
-    // Convert the given date to a timestamp range
     struct tm tm = {};
     strptime(date.c_str(), "%Y-%m-%d", &tm);
     time_t startOfDay = mktime(&tm);
@@ -892,7 +889,6 @@ vector<Workout> getWorkoutsForDay(const string& username, const string& date) {
 
         Workout workout;
 
-        // Check if the workout falls within the given day
         if (createdDateTime >= startOfDay && createdDateTime < endOfDay) {
             workout.name = name;
             workout.calories = calories;
@@ -907,7 +903,7 @@ vector<Workout> getWorkoutsForDay(const string& username, const string& date) {
 }
 
 Meal* getMealsForDay(const string& username, const string& date, int& count) {
-    string fileName = "../Users/" + username + "-meals.txt";
+    string fileName = BASE_USERS_FOLDER + username + MEALS_FILE_EXTENSION;
     ifstream inFile(fileName);
 
     if (!inFile) {
@@ -916,7 +912,7 @@ Meal* getMealsForDay(const string& username, const string& date, int& count) {
         return nullptr;
     }
 
-    Meal* mealsForDay = new Meal[20]; // Dynamically allocate an array
+    Meal* mealsForDay = new Meal[20];
     count = 0;
 
     // Convert the given date to a timestamp range
@@ -937,7 +933,7 @@ Meal* getMealsForDay(const string& username, const string& date, int& count) {
 
         if (pos1 == string::npos || pos2 == string::npos || pos3 == string::npos ||
             pos4 == string::npos || pos5 == string::npos || pos6 == string::npos) {
-            continue; // Skip malformed lines
+            continue;
         }
 
         string name = line.substr(0, pos1);
@@ -948,7 +944,6 @@ Meal* getMealsForDay(const string& username, const string& date, int& count) {
         double fats = stod(line.substr(pos5 + 1, pos6 - pos5 - 1));
         time_t createdDateTime = stoll(line.substr(pos6 + 1));
 
-        // Check if the meal falls within the given day
         if (createdDateTime >= startOfDay && createdDateTime < endOfDay) {
             mealsForDay[count].name = name;
             mealsForDay[count].calories = calories;
@@ -960,7 +955,7 @@ Meal* getMealsForDay(const string& username, const string& date, int& count) {
             count++;
 
             if (count >= 20) {
-                break; // Stop if the array is full
+                break; 
             }
         }
     }
@@ -984,7 +979,7 @@ MacrosInfo calculateNutritionalInfoForDay(vector<Workout> workoutsForDay, Meal* 
     }
 
     for (int i = 0; i < mealsLimit; i++) {
-        if (mealsForDay[i].name.empty()) break; // Stop if an empty element is found
+        if (mealsForDay[i].name.empty()) break; 
         calories += mealsForDay[i].calories;
         protein += mealsForDay[i].protein;
         carbs += mealsForDay[i].carbs;
@@ -999,7 +994,6 @@ MacrosInfo calculateNutritionalInfoForDay(vector<Workout> workoutsForDay, Meal* 
     return result;
 }
 
-// TODO
 void visualizeDateData(User& user) {
     string date;
     cout << "Enter a date to get all the nutritional info ('Year-Month-Day'): " << endl;
@@ -1011,8 +1005,6 @@ void visualizeDateData(User& user) {
 
     vector<Workout> workoutsForDay = getWorkoutsForDay(user.username, date);
     Meal* mealsForDay = getMealsForDay(user.username, date, mealCount);
-
-    // cout << mealsForDay[0].name << endl; // Test
 
     MacrosInfo calculatedNutritionalInfo = calculateNutritionalInfoForDay(workoutsForDay, mealsForDay, mealsLimit);
 
@@ -1031,7 +1023,7 @@ void visualizeDateData(User& user) {
 
         cout << "Meals: \n";
         for (int i = 0; i < mealsLimit; i++) {
-            if (mealsForDay[i].name.empty()) break; // Stop if no more meals
+            if (mealsForDay[i].name.empty()) break;
             cout << "Name: " << mealsForDay[i].name 
                  << "\tCalories: " << mealsForDay[i].calories 
                  << "\tProtein: " << mealsForDay[i].protein 
@@ -1104,13 +1096,13 @@ void showLoggedMenu(User& user)
         switch (userInput)
         {
             case 1:
-                viewDailyNutritionInfo(user); // TODO
+                viewDailyNutritionInfo(user);
                 break;
             case 2:
                 addMeal(user);
                 break;
             case 3:
-                addWorkout(user); // TODO
+                addWorkout(user);
                 break;
             case 4:
                 deleteAllInfo(user);

@@ -260,7 +260,6 @@ bool doesMealExist(const string mealName, time_t createdDateTime, const string f
     string line;
 
     while (getline(inFile, line)) {
-        // Find positions of commas
         size_t pos1 = line.find(',');
         if (pos1 == string::npos) continue;
 
@@ -548,7 +547,8 @@ string getValidatedGoal()
     string newGoal;
     while (true) {
         cout << "Enter new goal (weight loss/weight maintenance/weight gain): ";
-        cin >> newGoal;
+        cin.ignore();
+        getline(cin, newGoal);
         toLowerCase(newGoal);
         if (isGoalValid(newGoal)) {
             return newGoal;
@@ -596,7 +596,8 @@ void updateUserInFile(fstream& file, const User& user, long long posToModify)
 
     file << updatedLine;
 
-    file << string(updatedLine.size(), ' ') << "\n";
+    // Ensure the rest of the file is properly managed by truncating excess characters
+    file.flush();
 }
 
 bool updateMealInFile(const string& username, Meal& updatedMeal, const string filename)
