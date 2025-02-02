@@ -514,7 +514,7 @@ void recalculateUserMacros(User& user)
     user.recommendedMacros.carbohydrates = calculateCarbs(user.recommendedMacros.calories, user.goal);
     user.recommendedMacros.fats = calculateFats(user.recommendedMacros.calories, user.goal);
 
-    cout << "Recalculated recommended macros for " << user.username << ":\n";
+    cout << "\nRecalculated recommended macros for " << user.username << ":\n";
     cout << "Calories: " << user.recommendedMacros.calories << " kcal\n";
     cout << "Protein: " << user.recommendedMacros.protein << " g\n";
     cout << "Carbohydrates: " << user.recommendedMacros.carbohydrates << " g\n";

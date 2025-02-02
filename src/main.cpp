@@ -768,14 +768,13 @@ void editWorkout(User& user)
 {
     string fileName = BASE_USERS_FOLDER + user.username + WORKOUTS_FILE_EXTENSION;
     Workout workoutToEdit;
-    string oldWorkoutName = workoutToEdit.name;
 
     cout << "Edit Workout\n";
     cout << "Enter the name of the workout you want to edit: ";
     cin.ignore();
     getline(cin, workoutToEdit.name);
 
-    if (!doesWorkoutExist(oldWorkoutName, time(0), fileName)) {
+    if (!doesWorkoutExist(workoutToEdit.name, time(0), fileName)) {
         cerr << "No workout with this name exists for today. Please add it first.\n";
         return;
     }
