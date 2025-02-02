@@ -428,7 +428,7 @@ void loginMenu(User& user)
 
 void showUserInfo(User& user)
 {
-    cout << "Personal info:\n";
+    cout << "\nPersonal info:\n";
     cout << "Username:\t" << user.username << endl;
     cout << "Age:\t" << user.age << endl;
     cout << "Gender:\t" << user.gender << endl;
@@ -769,7 +769,7 @@ void editWorkout(User& user)
     string fileName = BASE_USERS_FOLDER + user.username + WORKOUTS_FILE_EXTENSION;
     Workout workoutToEdit;
 
-    cout << "Edit Workout\n";
+    cout << "\nEdit Workout\n";
     cout << "Enter the name of the workout you want to edit: ";
     cin.ignore();
     getline(cin, workoutToEdit.name);
@@ -799,7 +799,7 @@ void editMeal(User& user)
     string fileName = BASE_USERS_FOLDER + user.username + MEALS_FILE_EXTENSION;
     Meal mealToEdit;
 
-    cout << "Enter the name of the meal you want to edit: ";
+    cout << "\nEnter the name of the meal you want to edit: ";
     cin.ignore();
     getline(cin, mealToEdit.name);
 

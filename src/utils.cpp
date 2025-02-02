@@ -45,7 +45,7 @@ bool isPasswordValid(string password)
             hasLower = true;
         else if (ch >= '0' && ch <= '9')
             hasDigit = true;
-        else if (ch == '!' || ch == '.' || ch == '?' || ch == '_')
+        else if (ch == '!' || ch == '.' || ch == '?' || ch == '_' || ch == '#')
             hasSymbol = true;
     }
 
