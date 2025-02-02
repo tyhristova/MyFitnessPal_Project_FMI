@@ -54,7 +54,6 @@ void registrationMenu(User& user)
     // Age
     do {
         cout << "Age: ";
-        // cin.ignore();
         cin >> user.age;
 
         if (!isAgeValid(user.age)) {
@@ -64,9 +63,9 @@ void registrationMenu(User& user)
     } while (!isAgeValid(user.age));
 
     // Gender
+    cin.ignore();
     do {
         cout << "Gender (Male or Female): ";
-        cin.ignore();
         getline(cin, user.gender);
         toLowerCase(user.gender);
 
@@ -79,7 +78,6 @@ void registrationMenu(User& user)
     // Height
     do {
         cout << "Height (cm): ";
-        cin.ignore();
         cin >> user.height;
 
         if (!isHeightValid(user.height)) {
@@ -91,7 +89,6 @@ void registrationMenu(User& user)
     // Weight
     do {
         cout << "Weight (kg): ";
-        cin.ignore();
         cin >> user.weight;
 
         if (!isWeightValid(user.weight)) {
@@ -101,9 +98,9 @@ void registrationMenu(User& user)
     } while (!isWeightValid(user.weight));
 
     // Level of Activity
+    cin.ignore();
     do {
         cout << "Level of activity (Sedentary, Low, Moderate, Active, Very active): ";
-        cin.ignore();
         getline(cin, user.levelOfActivity);
         toLowerCase(user.levelOfActivity);
 
@@ -134,19 +131,18 @@ void registrationMenu(User& user)
         do
         {
             cout << "Write how much weight difference you want per week: ";
-            cin.ignore();
             cin >> user.weeklyWeightDiff;
 
             if (!isWeeklyWeightDiffValid(user.weeklyWeightDiff)) {
                 cerr << "Invalid weight difference! Choose from 0.25kg, 0.5kg, 0.75kg and 1kg.\n";
             }
         } while (!isWeeklyWeightDiffValid(user.weeklyWeightDiff));
+        cin.ignore();
     }
 
     // Type of Account
     do {
         cout << "Type of account (Standard or Premium): ";
-        cin.ignore();
         getline(cin, user.typeOfAccount);
         toLowerCase(user.typeOfAccount);
 
@@ -396,9 +392,9 @@ void loginMenu(User& user)
 
     cout << "\nIf you want to go back to the main menu press 'M'.\n";
 
+    cin.ignore();
     while (true) {
         cout << "Username: ";
-        cin.ignore();
         getline(cin, username);
 
         if (username == "M") {
@@ -495,7 +491,7 @@ double safeStod(const std::string& str) {
 }
 
 void viewDailyNutritionInfo(User& user) {
-    cout << "viewDailyNutritionInfo function started for user: " << user.username << endl;
+    cout << "\nviewDailyNutritionInfo function started for user: " << user.username << endl;
 
     cout << "Daily Nutrition Information for " << user.username << ":\n";
     cout << "Recommended Calories: " << user.recommendedMacros.calories << " kcal" << endl;
@@ -639,7 +635,7 @@ void addMeal(User& user)
     string fileName = BASE_USERS_FOLDER + user.username + MEALS_FILE_EXTENSION;
     Meal mealToAdd;
 
-    cout << "Add Meal\n";
+    cout << "\nAdd Meal\n";
 
     cout << "What type of meal you want to add?(Breakfast, Lunch, Snack or Dinner)\n";
     cin >> mealToAdd.dayPeriodType;
@@ -684,7 +680,7 @@ void addWorkout(User& user)
     string fileName = BASE_USERS_FOLDER + user.username + WORKOUTS_FILE_EXTENSION;
     Workout workoutToAdd;
 
-    cout << "Add Workout\n";
+    cout << "\nAdd Workout\n";
 
     do {
         cout << "Name: ";
@@ -772,13 +768,14 @@ void editWorkout(User& user)
 {
     string fileName = BASE_USERS_FOLDER + user.username + WORKOUTS_FILE_EXTENSION;
     Workout workoutToEdit;
+    string oldWorkoutName = workoutToEdit.name;
 
     cout << "Edit Workout\n";
     cout << "Enter the name of the workout you want to edit: ";
     cin.ignore();
     getline(cin, workoutToEdit.name);
 
-    if (!doesWorkoutExist(workoutToEdit.name, time(0), fileName)) {
+    if (!doesWorkoutExist(oldWorkoutName, time(0), fileName)) {
         cerr << "No workout with this name exists for today. Please add it first.\n";
         return;
     }
